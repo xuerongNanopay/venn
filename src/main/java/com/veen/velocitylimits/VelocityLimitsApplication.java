@@ -1,13 +1,13 @@
-package com.veen.velocity;
+package com.veen.velocitylimits;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class VelocityApplication {
+public class VelocityLimitsApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(VelocityApplication.class, args);
+		SpringApplication.run(VelocityLimitsApplication.class, args);
 	}
 
 }
