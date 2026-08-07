@@ -147,7 +147,7 @@ public class VelocityLimitsService {
                 startOfNextWeek
             );
         
-        BigDecimal weeklyTotal = dailyLoads.stream()
+        BigDecimal weeklyTotal = weekLoads.stream()
             .map(LoadFundEntity::getLoadAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
