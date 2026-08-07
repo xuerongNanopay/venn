@@ -29,7 +29,7 @@ public class LoadFundParser {
     public LoadFund parse(String line) {
 
         if (line == null || line.isBlank()) {
-            throw new RuntimeException("Input JSON cannot be empty");
+            throw new InvalidLoadRecordException("Input JSON cannot be empty");
         }
 
         try {
