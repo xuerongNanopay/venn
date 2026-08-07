@@ -1,10 +1,10 @@
-package com.veen.velocity;
+package com.veen.velocitylimits;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class VelocityApplicationTests {
+class VelocityLimitsApplicationTests {
 
 	@Test
 	void contextLoads() {
