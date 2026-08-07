@@ -3,7 +3,8 @@ package com.veen.velocitylimits.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record LoadFundRequest(
-    String id,
+    @JsonProperty("id")
+    String loadId,
 
     @JsonProperty("customer_id")
     String customerId,
@@ -11,6 +12,7 @@ public record LoadFundRequest(
     @JsonProperty("load_amount")
     String loadAmount,
 
-    String time
+    @JsonProperty("time")
+    String loadTime
 ) {
 }

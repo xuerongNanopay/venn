@@ -37,10 +37,10 @@ public class LoadFundParser {
             validateLoadRequest(request);
 
             return new LoadFund(
-                request.id(),
+                request.loadId(),
                 request.customerId(),
                 parseAmount(request.loadAmount()),
-                parseTime(request.time())
+                parseTime(request.loadTime())
             );
             
         } catch (JsonProcessingException e) {
@@ -97,7 +97,7 @@ public class LoadFundParser {
      * @throws InvalidLoadRecordException if any field is invalid
      */
     private void validateLoadRequest(LoadFundRequest request) {
-        if (isBlank(request.id())) {
+        if (isBlank(request.loadId())) {
             throw new InvalidLoadRecordException("id is required");
         }
 
@@ -109,7 +109,7 @@ public class LoadFundParser {
             throw new InvalidLoadRecordException("load_amount");
         }
 
-        if (isBlank(request.time())) {
+        if (isBlank(request.loadTime())) {
             throw new InvalidLoadRecordException("time");
         }
     }
