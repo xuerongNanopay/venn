@@ -10,11 +10,15 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.veen.velocitylimits.domain.LoadFund;
 import com.veen.velocitylimits.domain.LoadFundResult;
+import com.veen.velocitylimits.entity.CustomerEntity;
 import com.veen.velocitylimits.entity.LoadFundEntity;
+import com.veen.velocitylimits.repository.CustomerRepository;
 import com.veen.velocitylimits.repository.LoadRecordRepository;
 
 @Service
@@ -25,33 +29,43 @@ public class VelocityLimitsService {
     private static final int DAILY_LOAD_COUNT_LIMIT = 3;
 
     private final LoadRecordRepository loadRecordRepository;
+    private final CustomerRepository customerRepository;
 
-    public VelocityLimitsService(LoadRecordRepository loadRecordRepository) {
+    public VelocityLimitsService(
+        LoadRecordRepository loadRecordRepository,
+        CustomerRepository customerRepository
+    ) {
         this.loadRecordRepository= loadRecordRepository;
+        this.customerRepository = customerRepository;
     }
 
+    @Transactional
     public Optional<LoadFundResult> processLoadFund(LoadFund loadFund) {
 
+        // 1. lock acount
+        maybeCreateAndLockCustomerEntity(loadFund.customerId());
+
+        // 2. Check duplicate load and custimer id.
         if (loadRecordRepository
             .existsByLoadIdAndCustomerId(loadFund.loadId(), loadFund.customerId())
         ) {
             // if a load ID is observed more than once for a particular user, 
             // all but the first instance can be ignored
+            //TODO: log
             return Optional.empty();
         }
 
+        // 3. validate limit
         boolean accepted = validateLoadLimits(loadFund);
 
-        if ( accepted ) {
-            loadRecordRepository.save(
-                new LoadFundEntity(
-                    loadFund.loadId(), 
-                    loadFund.customerId(),
-                    loadFund.loadAmount(), 
-                    loadFund.loadTime(),
-                    accepted
-            ));
-        }
+        loadRecordRepository.save(
+            new LoadFundEntity(
+                loadFund.loadId(), 
+                loadFund.customerId(),
+                loadFund.loadAmount(), 
+                loadFund.loadTime(),
+                accepted
+        ));
 
 
         return Optional.of(new LoadFundResult(
@@ -59,6 +73,32 @@ public class VelocityLimitsService {
             loadFund.customerId(), 
             accepted
         ));
+    }
+
+    /**
+     * This is a hacker approach to create a customer.
+     * The purpose of it is to make this application to work, as we don't have customer beforehand.
+     * In the real production, we should have customer before allow them to load fund.
+     */
+    private CustomerEntity maybeCreateAndLockCustomerEntity(String customerId) {
+
+        CustomerEntity customer = customerRepository
+            .findByCustomerIdForUpdate(customerId)
+            .orElse(null);
+
+        if (customer != null) {
+            return customer;
+        }
+        // Create a customer if not exist.
+        try {
+            customerRepository.save(new CustomerEntity(customerId));
+        } catch (DataIntegrityViolationException ignored) {
+            // another transaction created it
+        }
+
+        return customerRepository
+            .findByCustomerIdForUpdate(customerId)
+            .orElseThrow();
     }
 
     /**
@@ -75,7 +115,7 @@ public class VelocityLimitsService {
         Instant startOfNextDay = startOfDay.plus(1, ChronoUnit.DAYS);
 
         List<LoadFundEntity> dailyLoads = loadRecordRepository
-            .findByCustomerIdAndLoadTimeGreaterThanEqualAndLoadTimeLessThan(
+            .findByCustomerIdAndAcceptedTrueAndLoadTimeGreaterThanEqualAndLoadTimeLessThan(
                 loadFund.customerId(),
                 startOfDay,
                 startOfNextDay
@@ -101,7 +141,7 @@ public class VelocityLimitsService {
         Instant startOfNextWeek = startOfWeek.plus(7, ChronoUnit.DAYS);
 
         List<LoadFundEntity> weekLoads = loadRecordRepository
-            .findByCustomerIdAndLoadTimeGreaterThanEqualAndLoadTimeLessThan(
+            .findByCustomerIdAndAcceptedTrueAndLoadTimeGreaterThanEqualAndLoadTimeLessThan(
                 loadFund.customerId(), 
                 startOfWeek, 
                 startOfNextWeek

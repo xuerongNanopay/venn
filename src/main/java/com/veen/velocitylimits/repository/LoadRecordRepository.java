@@ -14,7 +14,7 @@ public interface LoadRecordRepository extends JpaRepository<LoadFundEntity, Long
         String CustomerId
     );
 
-    List<LoadFundEntity> findByCustomerIdAndLoadTimeGreaterThanEqualAndLoadTimeLessThan(
+    List<LoadFundEntity> findByCustomerIdAndAcceptedTrueAndLoadTimeGreaterThanEqualAndLoadTimeLessThan(
         String customerId,
         Instant start,
         Instant end
