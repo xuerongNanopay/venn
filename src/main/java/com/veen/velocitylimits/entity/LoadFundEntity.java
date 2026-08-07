@@ -18,8 +18,8 @@ public class LoadFundEntity {
     @Column(name = "customer_id", nullable = false)
     private String customerId;
 
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal amount;
+    @Column(name = "load_loadAmount", nullable = false, precision = 19, scale = 2)
+    private BigDecimal loadAmount;
 
     @Column(name = "load_time", nullable = false)
     private Instant loadTime;
@@ -27,19 +27,33 @@ public class LoadFundEntity {
     @Column(nullable = false)
     private boolean accepted;
 
-    // protected LoadRecordEntity() {}
+    protected LoadFundEntity() {}
 
     public LoadFundEntity(
         String loadId,
         String customerId,
-        BigDecimal amount,
+        BigDecimal loadAmount,
         Instant loadTime
     ) {
         this.loadId = loadId;
         this.customerId = customerId;
-        this.amount = amount;
+        this.loadAmount = loadAmount;
         this.loadTime = loadTime;
         this.accepted = false;
+    }
+
+    public LoadFundEntity(
+        String loadId,
+        String customerId,
+        BigDecimal loadAmount,
+        Instant loadTime,
+        boolean accepted
+    ) {
+        this.loadId = loadId;
+        this.customerId = customerId;
+        this.loadAmount = loadAmount;
+        this.loadTime = loadTime;
+        this.accepted = accepted;
     }
 
     public Long getId() {
@@ -54,8 +68,8 @@ public class LoadFundEntity {
         return customerId;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public BigDecimal getLoadAmount() {
+        return loadAmount;
     }
 
     public Instant getLoadTime() {
