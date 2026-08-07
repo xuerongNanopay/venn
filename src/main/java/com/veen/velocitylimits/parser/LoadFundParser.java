@@ -26,7 +26,7 @@ public class LoadFundParser {
      * 
      * @throws InvalidLoadRecordException if the format is invalid
      */
-    public LoadFund parse(String line) {
+    public LoadFund parse(String line) throws InvalidLoadRecordException {
 
         if (line == null || line.isBlank()) {
             throw new InvalidLoadRecordException("Input JSON cannot be empty");
