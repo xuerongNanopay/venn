@@ -3,7 +3,6 @@ package com.veen.velocitylimits.runner;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,14 +53,21 @@ public class LoadFundRunner implements CommandLineRunner {
             throw new IllegalArgumentException("Input file is unreadable: " + inputFile);
         }
 
+        Path outputPath = args.length > 1 ? Path.of(args[1]) : Path.of("output.txt");
+
         log.info("Processing load fund input file: {}", inputPath);
+        log.info("Writing load fund output file: {}", outputPath);
         ObjectMapper mapper = new ObjectMapper();
 
+        try (
+            var reader = Files.newBufferedReader(inputPath);
+            var writer = Files.newBufferedWriter(outputPath)
+        ) {
+            String line;
+            int lineNumber = 0;
 
-        try (var lines = Files.lines(inputPath)) {
-            AtomicInteger lineNumber = new AtomicInteger();
-            lines.forEach(line -> {
-                int currentLineNumber = lineNumber.incrementAndGet();
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
 
                 try {
                     // Parse string record to LoadFund.
@@ -75,29 +81,25 @@ public class LoadFundRunner implements CommandLineRunner {
                         case Optional<LoadFundResult> ret when ret.isPresent() -> {
                             LoadFundResult r = ret.get();
                             LoadFundResponse loadFundResponse = new LoadFundResponse(r.loadId(), r.customerId(), r.accepted());
-
-                            try {
-                                System.out.println(mapper.writeValueAsString(loadFundResponse));
-                            } catch (Throwable t) {
-                                log.error("Failed to serialize load fund response for load id {}", r.loadId(), t);
-                            }
+                            writer.write(mapper.writeValueAsString(loadFundResponse));
+                            writer.newLine();
 
                         }
                         case Optional<LoadFundResult> _ -> {
                             // case: a load ID is observed more than once for a particular user
-                            log.info("Ignoring duplicate load fund at line {}", currentLineNumber);
-                            log.debug("Duplicate load fund at line {}: {}", currentLineNumber, line);
+                            log.info("Ignoring duplicate load fund at line {}", lineNumber);
+                            log.debug("Duplicate load fund at line {}: {}", lineNumber, line);
                         }
                     }
                 } catch (InvalidLoadFundException e) {
                     log.warn(
                         "Skipping invalid load fund at line {}: {}",
-                        currentLineNumber,
+                        lineNumber,
                         e.getMessage()
                     );
-                    log.debug("Invalid load fund at line {}: {}", currentLineNumber, line);
+                    log.debug("Invalid load fund at line {}: {}", lineNumber, line);
                 }
-            });
+            }
         }
     }
 }
