@@ -19,7 +19,7 @@ import com.veen.velocitylimits.domain.LoadFundResult;
 import com.veen.velocitylimits.entity.CustomerEntity;
 import com.veen.velocitylimits.entity.LoadFundEntity;
 import com.veen.velocitylimits.repository.CustomerRepository;
-import com.veen.velocitylimits.repository.LoadRecordRepository;
+import com.veen.velocitylimits.repository.LoadFundRepository;
 
 @Service
 public class VelocityLimitsService {
@@ -28,14 +28,14 @@ public class VelocityLimitsService {
     private static final BigDecimal WEEKLY_LIMIT = new BigDecimal("20000.00");
     private static final int DAILY_LOAD_COUNT_LIMIT = 3;
 
-    private final LoadRecordRepository loadRecordRepository;
+    private final LoadFundRepository loadFundRepository;
     private final CustomerRepository customerRepository;
 
     public VelocityLimitsService(
-        LoadRecordRepository loadRecordRepository,
+        LoadFundRepository loadFundRepository,
         CustomerRepository customerRepository
     ) {
-        this.loadRecordRepository= loadRecordRepository;
+        this.loadFundRepository= loadFundRepository;
         this.customerRepository = customerRepository;
     }
 
@@ -46,7 +46,7 @@ public class VelocityLimitsService {
         maybeCreateAndLockCustomerEntity(loadFund.customerId());
 
         // 2. Check duplicate load and custimer id.
-        if (loadRecordRepository
+        if (loadFundRepository
             .existsByLoadIdAndCustomerId(loadFund.loadId(), loadFund.customerId())
         ) {
             // if a load ID is observed more than once for a particular user, 
@@ -58,7 +58,7 @@ public class VelocityLimitsService {
         // 3. validate limit
         boolean accepted = validateLoadLimits(loadFund);
 
-        loadRecordRepository.save(
+        loadFundRepository.save(
             new LoadFundEntity(
                 loadFund.loadId(), 
                 loadFund.customerId(),
@@ -114,7 +114,7 @@ public class VelocityLimitsService {
         Instant startOfDay = getStartOfUTCDay(loadFund.loadTime());
         Instant startOfNextDay = startOfDay.plus(1, ChronoUnit.DAYS);
 
-        List<LoadFundEntity> dailyLoads = loadRecordRepository
+        List<LoadFundEntity> dailyLoads = loadFundRepository
             .findByCustomerIdAndAcceptedTrueAndLoadTimeGreaterThanEqualAndLoadTimeLessThan(
                 loadFund.customerId(),
                 startOfDay,
@@ -140,7 +140,7 @@ public class VelocityLimitsService {
         Instant startOfWeek = getStartOfUTCWeek(loadFund.loadTime());
         Instant startOfNextWeek = startOfWeek.plus(7, ChronoUnit.DAYS);
 
-        List<LoadFundEntity> weekLoads = loadRecordRepository
+        List<LoadFundEntity> weekLoads = loadFundRepository
             .findByCustomerIdAndAcceptedTrueAndLoadTimeGreaterThanEqualAndLoadTimeLessThan(
                 loadFund.customerId(), 
                 startOfWeek, 

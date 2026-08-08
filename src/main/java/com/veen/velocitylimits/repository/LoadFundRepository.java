@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface LoadRecordRepository extends JpaRepository<LoadFundEntity, Long> {
+public interface LoadFundRepository extends JpaRepository<LoadFundEntity, Long> {
     
     boolean existsByLoadIdAndCustomerId(
         String loadId,
