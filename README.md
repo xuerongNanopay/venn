@@ -6,6 +6,7 @@ Velocity Limits is a Spring Boot CLI application that processes load-fund record
 
 - The application creates a new customer record when a customer does not already exist. In a production system, customers would normally be created before they are allowed to load funds.
 - The application uses H2 for demo purposes, but the service still accounts for race conditions that could occur in a production database.
+- Production concerns such as retry policies, structured logging, containerization, metrics, and external database configuration are intentionally out of scope.
 
 ## Requirements
 
