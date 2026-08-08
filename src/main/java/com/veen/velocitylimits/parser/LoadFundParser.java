@@ -106,11 +106,11 @@ public class LoadFundParser {
         }
     
         if (isBlank(request.loadAmount())) {
-            throw new InvalidLoadRecordException("load_amount");
+            throw new InvalidLoadRecordException("load_amount is required");
         }
 
         if (isBlank(request.loadTime())) {
-            throw new InvalidLoadRecordException("time");
+            throw new InvalidLoadRecordException("time is required");
         }
     }
 

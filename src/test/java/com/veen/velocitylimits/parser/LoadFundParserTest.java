@@ -111,7 +111,7 @@ public class LoadFundParserTest {
             InvalidLoadRecordException.class,
             () -> parser.parse(json)
         );
-        assertEquals("load_amount", exception.getMessage());
+        assertEquals("load_amount is required", exception.getMessage());
     }
 
     @Test
@@ -127,7 +127,7 @@ public class LoadFundParserTest {
             InvalidLoadRecordException.class,
             () -> parser.parse(json)
         );
-        assertEquals("time", exception.getMessage());
+        assertEquals("time is required", exception.getMessage());
     }
 
     @Test
