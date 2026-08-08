@@ -83,6 +83,54 @@ public class LoadFundParserTest {
     }
 
     @Test
+    void shouldRejectMissingId() {
+        String json = """
+            {
+                "customer_id": "5678",
+                "load_amount": "$123.45",
+                "time": "2018-01-01T00:00:00Z"
+            }
+        """;
+        InvalidLoadRecordException exception = assertThrows(
+            InvalidLoadRecordException.class,
+            () -> parser.parse(json)
+        );
+        assertEquals("id is required", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectMissingLoadAmount() {
+        String json = """
+            {
+                "id": "1234",
+                "customer_id": "5678",
+                "time": "2018-01-01T00:00:00Z"
+            }
+        """;
+        InvalidLoadRecordException exception = assertThrows(
+            InvalidLoadRecordException.class,
+            () -> parser.parse(json)
+        );
+        assertEquals("load_amount", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectMissingTime() {
+        String json = """
+            {
+                "id": "1234",
+                "customer_id": "5678",
+                "load_amount": "$123.45"
+            }
+        """;
+        InvalidLoadRecordException exception = assertThrows(
+            InvalidLoadRecordException.class,
+            () -> parser.parse(json)
+        );
+        assertEquals("time", exception.getMessage());
+    }
+
+    @Test
     void shouldRejectInvalidAmount() {
         String json = """
             {
