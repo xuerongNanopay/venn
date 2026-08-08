@@ -2,10 +2,23 @@ package com.veen.velocitylimits.entity;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "load_fund")
+@Table(
+    name = "load_fund",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_load_fund_load_id_customer_id",
+        columnNames = {"load_id", "customer_id"}
+    )
+)
 public class LoadFundEntity {
     
     @Id
@@ -18,7 +31,7 @@ public class LoadFundEntity {
     @Column(name = "customer_id", nullable = false)
     private String customerId;
 
-    @Column(name = "load_loadAmount", nullable = false, precision = 19, scale = 2)
+    @Column(name = "load_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal loadAmount;
 
     @Column(name = "load_time", nullable = false)

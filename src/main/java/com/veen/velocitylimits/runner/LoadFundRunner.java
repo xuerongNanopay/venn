@@ -25,13 +25,16 @@ public class LoadFundRunner implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(LoadFundRunner.class);
     private static final String USAGE = "Usage: java -jar app.jar <input_file> [output_file]";
 
+    private final ObjectMapper objectMapper;
     private final LoadFundParser loadFundParser;
     private final VelocityLimitsService velocityLimitsService;
 
     public LoadFundRunner(
+        ObjectMapper objectMapper,
         LoadFundParser loadFundParser,
         VelocityLimitsService velocityLimitsService
     ) {
+        this.objectMapper = objectMapper;
         this.loadFundParser = loadFundParser;
         this.velocityLimitsService = velocityLimitsService;
     }
@@ -57,7 +60,6 @@ public class LoadFundRunner implements CommandLineRunner {
 
         log.info("Processing load fund input file: {}", inputPath);
         log.info("Writing load fund output file: {}", outputPath);
-        ObjectMapper mapper = new ObjectMapper();
 
         try (
             var reader = Files.newBufferedReader(inputPath);
@@ -81,7 +83,7 @@ public class LoadFundRunner implements CommandLineRunner {
                         case Optional<LoadFundResult> ret when ret.isPresent() -> {
                             LoadFundResult r = ret.get();
                             LoadFundResponse loadFundResponse = new LoadFundResponse(r.loadId(), r.customerId(), r.accepted());
-                            writer.write(mapper.writeValueAsString(loadFundResponse));
+                            writer.write(objectMapper.writeValueAsString(loadFundResponse));
                             writer.newLine();
 
                         }
