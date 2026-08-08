@@ -2,6 +2,11 @@
 
 Velocity Limits is a Spring Boot CLI application that processes load-fund records from a line-delimited JSON input file.
 
+## Notes
+
+- The application creates a new customer record when a customer does not already exist. In a production system, customers would normally be created before they are allowed to load funds.
+- The application uses H2 for demo purposes, but the service still accounts for race conditions that could occur in a production database.
+
 ## Requirements
 
 - Java 25
@@ -25,7 +30,7 @@ src/main/java/com/veen/velocitylimits/
 └── service/                            # Velocity limit business logic
 ```
 
-## Run Tests
+## Test
 
 ```bash
 ./gradlew test
@@ -37,7 +42,7 @@ src/main/java/com/veen/velocitylimits/
 ./gradlew build
 ```
 
-## Run
+## Usage
 
 Using Gradle:
 
@@ -52,10 +57,10 @@ Using Java:
 java -jar build/libs/velocity-0.0.0-RELEASE.jar example_input.txt output.txt
 ```
 
-The first argument is the input file. The second argument is optional:
+The first argument is the input file. The second argument is optional.
 
-- provided: results are written to that file
-- omitted: results are written to `output.txt`
+- If provided, results are written to that file.
+- If omitted, results are written to `output.txt`.
 
 Input records should be one JSON object per line:
 
