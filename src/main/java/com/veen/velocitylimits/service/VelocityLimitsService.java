@@ -10,6 +10,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ import com.veen.velocitylimits.repository.LoadFundRepository;
 @Service
 public class VelocityLimitsService {
     
+    private static final Logger log = LoggerFactory.getLogger(VelocityLimitsService.class);
     private static final BigDecimal DAILY_LIMIT = new BigDecimal("5000.00");
     private static final BigDecimal WEEKLY_LIMIT = new BigDecimal("20000.00");
     private static final int DAILY_LOAD_COUNT_LIMIT = 3;
@@ -52,7 +55,11 @@ public class VelocityLimitsService {
         ) {
             // if a load ID is observed more than once for a particular user, 
             // all but the first instance can be ignored
-            //TODO: log
+            log.info(
+                "Ignoring duplicate load {} for customer {}",
+                loadFund.loadId(),
+                loadFund.customerId()
+            );
             return Optional.empty();
         }
 
@@ -68,6 +75,13 @@ public class VelocityLimitsService {
                 accepted
         ));
 
+        if (accepted) {
+            log.debug(
+                "Accepted load {} for customer {}",
+                loadFund.loadId(),
+                loadFund.customerId()
+            );
+        }
 
         return Optional.of(new LoadFundResult(
             loadFund.loadId(), 
@@ -95,6 +109,10 @@ public class VelocityLimitsService {
             customerRepository.save(new CustomerEntity(customerId));
         } catch (DataIntegrityViolationException ignored) {
             // another transaction created it
+            log.debug(
+                "Customer {} was created by another transaction before lock retry",
+                customerId
+            );
         }
 
         return customerRepository
@@ -124,7 +142,11 @@ public class VelocityLimitsService {
         
         // A maximum of 3 loads can be performed per day, regardless of amount
         if (dailyLoads.size() >= DAILY_LOAD_COUNT_LIMIT) {
-            //TODO: log
+            log.info(
+                "Declining load {} for customer {}: daily load count limit reached",
+                loadFund.loadId(),
+                loadFund.customerId()
+            );
             return false;
         }
 
@@ -134,7 +156,11 @@ public class VelocityLimitsService {
         
         // A maximum of $5,000 can be loaded per day
         if (dailyTotal.add(loadFund.loadAmount()).compareTo(DAILY_LIMIT) > 0 ) {
-            //TODO: log
+            log.info(
+                "Declining load {} for customer {}: daily amount limit exceeded",
+                loadFund.loadId(),
+                loadFund.customerId()
+            );
             return false;
         }
 
@@ -154,7 +180,11 @@ public class VelocityLimitsService {
 
         // A maximum of $20,000 can be loaded per week
         if (weeklyTotal.add(loadFund.loadAmount()).compareTo(WEEKLY_LIMIT) > 0) {
-            //TODO: log
+            log.info(
+                "Declining load {} for customer {}: weekly amount limit exceeded",
+                loadFund.loadId(),
+                loadFund.customerId()
+            );
             return false;
         }
 
