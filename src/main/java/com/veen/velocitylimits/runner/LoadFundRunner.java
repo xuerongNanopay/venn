@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.veen.velocitylimits.domain.LoadFund;
 import com.veen.velocitylimits.domain.LoadFundResult;
 import com.veen.velocitylimits.dto.LoadFundResponse;
+import com.veen.velocitylimits.exception.CliFileException;
+import com.veen.velocitylimits.exception.CliUsageException;
 import com.veen.velocitylimits.exception.InvalidLoadFundException;
 import com.veen.velocitylimits.parser.LoadFundParser;
 import com.veen.velocitylimits.service.VelocityLimitsService;
@@ -47,16 +49,21 @@ public class LoadFundRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         if (args.length < 1) {
-            throw new IllegalArgumentException("Expected at least 1 argument. " + USAGE);
+            throw new CliUsageException("Expected at least 1 argument. " + USAGE);
+        }
+
+        if (args.length > 2) {
+            throw new CliUsageException("Expected at most 2 arguments. " + USAGE);
         }
 
         String inputFile = args[0];
         Path inputPath = Path.of(inputFile);
         if ( !Files.isReadable(inputPath) ) {
-            throw new IllegalArgumentException("Input file is unreadable: " + inputFile);
+            throw new CliFileException("Input file is unreadable: " + inputFile);
         }
 
         Path outputPath = args.length > 1 ? Path.of(args[1]) : Path.of("output.txt");
+        validateOutputPath(outputPath);
 
         log.info("Processing load fund input file: {}", inputPath);
         log.info("Writing load fund output file: {}", outputPath);
@@ -102,6 +109,22 @@ public class LoadFundRunner implements CommandLineRunner {
                     log.debug("Invalid load fund at line {}: {}", lineNumber, line);
                 }
             }
+        }
+    }
+
+    private void validateOutputPath(Path outputPath) {
+        Path parent = outputPath.toAbsolutePath().getParent();
+
+        if (parent != null && !Files.isDirectory(parent)) {
+            throw new CliFileException("Output directory does not exist: " + parent);
+        }
+
+        if (parent != null && !Files.isWritable(parent)) {
+            throw new CliFileException("Output directory is not writable: " + parent);
+        }
+
+        if (Files.exists(outputPath) && !Files.isWritable(outputPath)) {
+            throw new CliFileException("Output file is not writable: " + outputPath);
         }
     }
 }
