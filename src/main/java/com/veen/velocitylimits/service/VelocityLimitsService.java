@@ -43,13 +43,19 @@ public class VelocityLimitsService {
         this.customerRepository = customerRepository;
     }
 
+    /**
+     * Processes a single load request.
+     *
+     * @return {@link Optional#empty()} when the load is a duplicate for the customer;
+     *         otherwise a result containing the load id, customer id, and accepted status
+     */
     @Transactional
     public Optional<LoadFundResult> processLoadFund(LoadFund loadFund) {
 
-        // 1. lock acount
+        // 1. lock account
         maybeCreateAndLockCustomerEntity(loadFund.customerId());
 
-        // 2. Check duplicate load and custimer id.
+        // 2. Check duplicate load and customer id.
         if (loadFundRepository
             .existsByLoadIdAndCustomerId(loadFund.loadId(), loadFund.customerId())
         ) {
@@ -91,9 +97,10 @@ public class VelocityLimitsService {
     }
 
     /**
-     * This is a hacker approach to create a customer.
-     * The purpose of it is to make this application to work, as we don't have customer beforehand.
-     * In the real production, we should have customer before allow them to load fund.
+     * Creates the customer if missing, then obtains a pessimistic lock for that customer.
+     * If another transaction creates the customer first, retries the locked lookup.
+     *
+     * @throws CustomerEntityLockException when the customer still cannot be found and locked
      */
     private CustomerEntity maybeCreateAndLockCustomerEntity(String customerId) {
 
@@ -121,12 +128,12 @@ public class VelocityLimitsService {
     }
 
     /**
-     * Ensure loadFund is compliance with limits
+     * Ensures loadFund is compliant with limits:
      *  1. A maximum of $5,000 can be loaded per day
      *  2. A maximum of 3 loads can be performed per day, regardless of amount
      *  3. A maximum of $20,000 can be loaded per week
      * 
-     * @return true if loadFun passes all validations, elsewise false
+     * @return true if loadFund passes all validations, otherwise false
      */
     private boolean validateLoadLimits(LoadFund loadFund) {
 

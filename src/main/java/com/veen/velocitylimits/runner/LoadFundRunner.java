@@ -38,7 +38,8 @@ public class LoadFundRunner implements CommandLineRunner {
     }
     
     /**
-     * Entry point of Velocity Limits CLI application.
+     * Entry point of the Velocity Limits CLI application.
+     * Reads load fund records from the input file, writes non-duplicate
      */
     @Override
     public void run(String... args) throws Exception {
