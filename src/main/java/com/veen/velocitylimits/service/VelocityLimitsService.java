@@ -18,6 +18,7 @@ import com.veen.velocitylimits.domain.LoadFund;
 import com.veen.velocitylimits.domain.LoadFundResult;
 import com.veen.velocitylimits.entity.CustomerEntity;
 import com.veen.velocitylimits.entity.LoadFundEntity;
+import com.veen.velocitylimits.exception.CustomerEntityLockException;
 import com.veen.velocitylimits.repository.CustomerRepository;
 import com.veen.velocitylimits.repository.LoadFundRepository;
 
@@ -98,7 +99,7 @@ public class VelocityLimitsService {
 
         return customerRepository
             .findByCustomerIdForUpdate(customerId)
-            .orElseThrow();
+            .orElseThrow(() -> new CustomerEntityLockException(customerId));
     }
 
     /**

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.veen.velocitylimits.domain.LoadFund;
 import com.veen.velocitylimits.domain.LoadFundResult;
 import com.veen.velocitylimits.dto.LoadFundResponse;
+import com.veen.velocitylimits.exception.InvalidLoadRecordException;
 import com.veen.velocitylimits.parser.LoadFundParser;
 import com.veen.velocitylimits.service.VelocityLimitsService;
 
@@ -53,32 +54,34 @@ public class LoadFundRunner implements CommandLineRunner {
 
         try (var lines = Files.lines(inputPath)) {
             lines.forEach(line -> {
-                // Parse string record to LoadFund.
-                LoadFund loadFund = loadFundParser.parse(line);
+                try {
+                    // Parse string record to LoadFund.
+                    LoadFund loadFund = loadFundParser.parse(line);
 
-                // Process LoadFund.
-                Optional<LoadFundResult> result = velocityLimitsService.processLoadFund(loadFund);
+                    // Process LoadFund.
+                    Optional<LoadFundResult> result = velocityLimitsService.processLoadFund(loadFund);
 
-                
-                switch (result) {
-                    case Optional<LoadFundResult> ret when ret.isPresent() -> {
-                        LoadFundResult r = ret.get();
-                        LoadFundResponse loadFundResponse = new LoadFundResponse(r.loadId(), r.customerId(), r.accepted());
+                    
+                    switch (result) {
+                        case Optional<LoadFundResult> ret when ret.isPresent() -> {
+                            LoadFundResult r = ret.get();
+                            LoadFundResponse loadFundResponse = new LoadFundResponse(r.loadId(), r.customerId(), r.accepted());
 
-                        try {
-                            System.out.println(mapper.writeValueAsString(loadFundResponse));
-                        } catch (Throwable t) {
-                            t.printStackTrace();
+                            try {
+                                System.out.println(mapper.writeValueAsString(loadFundResponse));
+                            } catch (Throwable t) {
+                                t.printStackTrace();
+                            }
+
                         }
-
+                        case Optional<LoadFundResult> _ -> {
+                            // case: a load ID is observed more than once for a particular user
+                            //TODO: log
+                        }
                     }
-                    case Optional<LoadFundResult> _ -> {
-                        // case: a load ID is observed more than once for a particular user
-                        //TODO: log
-                    }
-                    case null -> {
-                        //TODO: unexpected error
-                    }
+                } catch (InvalidLoadRecordException e) {
+                    //TODO: add log
+                    e.printStackTrace();
                 }
             });
         }
