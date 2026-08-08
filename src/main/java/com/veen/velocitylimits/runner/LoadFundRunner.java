@@ -4,27 +4,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.veen.velocitylimits.domain.LoadFund;
 import com.veen.velocitylimits.domain.LoadFundResult;
-import com.veen.velocitylimits.dto.LoadFundRequest;
 import com.veen.velocitylimits.dto.LoadFundResponse;
 import com.veen.velocitylimits.parser.LoadFundParser;
 import com.veen.velocitylimits.service.VelocityLimitsService;
 
 @Component
+@ConditionalOnProperty(name = "velocitylimits.runner.enabled", havingValue = "true", matchIfMissing = true)
 public class LoadFundRunner implements CommandLineRunner {
 
-    private static int EXIT_ERROR_CODE = 1;
-
-    @Autowired
-    private ApplicationContext context;
+    private static final String USAGE = "Usage: java -jar app.jar <input_file> [output_file]";
 
     private final LoadFundParser loadFundParser;
     private final VelocityLimitsService velocityLimitsService;
@@ -44,16 +39,13 @@ public class LoadFundRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         if (args.length < 1) {
-            System.err.println("Error: Expected at least 1 argument");
-            System.err.println("Usage: java -jar app.jar <input_file> [output_file]");
-            System.exit(SpringApplication.exit(context, () -> EXIT_ERROR_CODE));
+            throw new IllegalArgumentException("Expected at least 1 argument. " + USAGE);
         }
 
         String inputFile = args[0];
         Path inputPath = Path.of(inputFile);
         if ( !Files.isReadable(inputPath) ) {
-            System.err.println("Error: input file is unreadable");
-            System.exit(SpringApplication.exit(context, () -> EXIT_ERROR_CODE));
+            throw new IllegalArgumentException("Input file is unreadable: " + inputFile);
         }
 
         ObjectMapper mapper = new ObjectMapper();
