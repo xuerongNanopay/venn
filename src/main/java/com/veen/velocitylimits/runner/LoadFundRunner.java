@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.veen.velocitylimits.domain.LoadFund;
 import com.veen.velocitylimits.domain.LoadFundResult;
 import com.veen.velocitylimits.dto.LoadFundResponse;
-import com.veen.velocitylimits.exception.InvalidLoadRecordException;
+import com.veen.velocitylimits.exception.InvalidLoadFundException;
 import com.veen.velocitylimits.parser.LoadFundParser;
 import com.veen.velocitylimits.service.VelocityLimitsService;
 
@@ -84,16 +84,17 @@ public class LoadFundRunner implements CommandLineRunner {
                         }
                         case Optional<LoadFundResult> _ -> {
                             // case: a load ID is observed more than once for a particular user
-                            log.info("Ignoring duplicate load record");
+                            log.info("Ignoring duplicate load fund at line {}", currentLineNumber);
+                            log.debug("Duplicate load fund at line {}: {}", currentLineNumber, line);
                         }
                     }
-                } catch (InvalidLoadRecordException e) {
+                } catch (InvalidLoadFundException e) {
                     log.warn(
-                        "Skipping invalid load record at line {}: {}",
+                        "Skipping invalid load fund at line {}: {}",
                         currentLineNumber,
                         e.getMessage()
                     );
-                    log.debug("Invalid load record at line {}: {}", currentLineNumber, line);
+                    log.debug("Invalid load fund at line {}: {}", currentLineNumber, line);
                 }
             });
         }

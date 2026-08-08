@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.veen.velocitylimits.domain.LoadFund;
 import com.veen.velocitylimits.dto.LoadFundRequest;
-import com.veen.velocitylimits.exception.InvalidLoadRecordException;
+import com.veen.velocitylimits.exception.InvalidLoadFundException;
 
 @Component
 public class LoadFundParser {
@@ -24,12 +24,12 @@ public class LoadFundParser {
     /**
      * Deserialize string to LoadFund
      * 
-     * @throws InvalidLoadRecordException if the format is invalid
+     * @throws InvalidLoadFundException if the format is invalid
      */
-    public LoadFund parse(String line) throws InvalidLoadRecordException {
+    public LoadFund parse(String line) throws InvalidLoadFundException {
 
         if (line == null || line.isBlank()) {
-            throw new InvalidLoadRecordException("Input JSON cannot be empty");
+            throw new InvalidLoadFundException("Input JSON cannot be empty");
         }
 
         try {
@@ -44,7 +44,7 @@ public class LoadFundParser {
             );
             
         } catch (JsonProcessingException e) {
-            throw new InvalidLoadRecordException(
+            throw new InvalidLoadFundException(
                 "Invalid JSON input", e
             );
         }
@@ -55,7 +55,7 @@ public class LoadFundParser {
      * 
      * @param value The fund amount string
      *                  Example: {@code $7777777.77}
-     * @throws InvalidLoadRecordException if the value format is invalid
+     * @throws InvalidLoadFundException if the value format is invalid
      */
     private BigDecimal parseAmount(String value) {
         try {
@@ -64,7 +64,7 @@ public class LoadFundParser {
             BigDecimal amount = new BigDecimal(normalized);
 
             if (amount.signum() <= 0) {
-                throw new InvalidLoadRecordException(
+                throw new InvalidLoadFundException(
                     "load_amount must be greater than zero"
                 );
             }
@@ -72,7 +72,7 @@ public class LoadFundParser {
             return amount;
 
         } catch (NumberFormatException e) {
-            throw new InvalidLoadRecordException("Invalid load_amount: " + value, e);
+            throw new InvalidLoadFundException("Invalid load_amount: " + value, e);
         }
     }
 
@@ -81,36 +81,36 @@ public class LoadFundParser {
      * 
      * @param timestamp The ISO 8601 date-time string to parse
      *                  Example: {@code 2018-01-01T00:00:00Z}
-     * @throws InvalidLoadRecordException if the date format is invalid
+     * @throws InvalidLoadFundException if the date format is invalid
      */
     private Instant parseTime(String timestamp) {
         try {
             return Instant.parse(timestamp);
         } catch (DateTimeParseException e) {
-            throw new InvalidLoadRecordException("Invalid time: " + timestamp, e);
+            throw new InvalidLoadFundException("Invalid time: " + timestamp, e);
         }
     }
 
     /**
      * Validate LoadRequest
      * 
-     * @throws InvalidLoadRecordException if any field is invalid
+     * @throws InvalidLoadFundException if any field is invalid
      */
     private void validateLoadRequest(LoadFundRequest request) {
         if (isBlank(request.loadId())) {
-            throw new InvalidLoadRecordException("id is required");
+            throw new InvalidLoadFundException("id is required");
         }
 
         if (isBlank(request.customerId())) {
-            throw new InvalidLoadRecordException("customer_id is required");
+            throw new InvalidLoadFundException("customer_id is required");
         }
     
         if (isBlank(request.loadAmount())) {
-            throw new InvalidLoadRecordException("load_amount is required");
+            throw new InvalidLoadFundException("load_amount is required");
         }
 
         if (isBlank(request.loadTime())) {
-            throw new InvalidLoadRecordException("time is required");
+            throw new InvalidLoadFundException("time is required");
         }
     }
 

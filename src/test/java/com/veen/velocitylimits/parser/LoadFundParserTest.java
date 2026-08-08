@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.veen.velocitylimits.domain.LoadFund;
-import com.veen.velocitylimits.exception.InvalidLoadRecordException;
+import com.veen.velocitylimits.exception.InvalidLoadFundException;
 
 public class LoadFundParserTest {
 
@@ -46,8 +46,8 @@ public class LoadFundParserTest {
 
     @Test
     void shouldRejectBlankInput() {
-        InvalidLoadRecordException exception = assertThrows(
-            InvalidLoadRecordException.class,
+        InvalidLoadFundException exception = assertThrows(
+            InvalidLoadFundException.class,
             () -> parser.parse(" ")
         );
         assertEquals("Input JSON cannot be empty", exception.getMessage());
@@ -55,8 +55,8 @@ public class LoadFundParserTest {
 
     @Test
     void sshouldRejectMalformedJson() {
-        InvalidLoadRecordException exception = assertThrows(
-            InvalidLoadRecordException.class,
+        InvalidLoadFundException exception = assertThrows(
+            InvalidLoadFundException.class,
             () -> parser.parse("""
                         {
                             "id": 
@@ -75,8 +75,8 @@ public class LoadFundParserTest {
                 "time": "2018-01-01T00:00:00Z"
             }
         """;
-        InvalidLoadRecordException exception = assertThrows(
-            InvalidLoadRecordException.class,
+        InvalidLoadFundException exception = assertThrows(
+            InvalidLoadFundException.class,
             () -> parser.parse(json)
         );
         assertEquals("customer_id is required", exception.getMessage());
@@ -91,8 +91,8 @@ public class LoadFundParserTest {
                 "time": "2018-01-01T00:00:00Z"
             }
         """;
-        InvalidLoadRecordException exception = assertThrows(
-            InvalidLoadRecordException.class,
+        InvalidLoadFundException exception = assertThrows(
+            InvalidLoadFundException.class,
             () -> parser.parse(json)
         );
         assertEquals("id is required", exception.getMessage());
@@ -107,8 +107,8 @@ public class LoadFundParserTest {
                 "time": "2018-01-01T00:00:00Z"
             }
         """;
-        InvalidLoadRecordException exception = assertThrows(
-            InvalidLoadRecordException.class,
+        InvalidLoadFundException exception = assertThrows(
+            InvalidLoadFundException.class,
             () -> parser.parse(json)
         );
         assertEquals("load_amount is required", exception.getMessage());
@@ -123,8 +123,8 @@ public class LoadFundParserTest {
                 "load_amount": "$123.45"
             }
         """;
-        InvalidLoadRecordException exception = assertThrows(
-            InvalidLoadRecordException.class,
+        InvalidLoadFundException exception = assertThrows(
+            InvalidLoadFundException.class,
             () -> parser.parse(json)
         );
         assertEquals("time is required", exception.getMessage());
@@ -140,8 +140,8 @@ public class LoadFundParserTest {
                 "time": "2018-01-01T00:00:00Z"
             }
         """;
-        InvalidLoadRecordException exception = assertThrows(
-                InvalidLoadRecordException.class,
+        InvalidLoadFundException exception = assertThrows(
+                InvalidLoadFundException.class,
                 () -> parser.parse(json)
         );
         assertEquals(
@@ -160,8 +160,8 @@ public class LoadFundParserTest {
                 "time": "2018-01-01T00:00:00Z"
             }
         """;
-        InvalidLoadRecordException exception = assertThrows(
-            InvalidLoadRecordException.class,
+        InvalidLoadFundException exception = assertThrows(
+            InvalidLoadFundException.class,
             () -> parser.parse(json)
         );
         assertEquals(
@@ -183,8 +183,8 @@ public class LoadFundParserTest {
             }
         """;
 
-        InvalidLoadRecordException exception = assertThrows(
-            InvalidLoadRecordException.class,
+        InvalidLoadFundException exception = assertThrows(
+            InvalidLoadFundException.class,
             () -> parser.parse(json)
         );
 
