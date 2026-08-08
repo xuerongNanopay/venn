@@ -72,6 +72,7 @@ public class VelocityLimitsService {
         // 3. validate limit
         boolean accepted = validateLoadLimits(loadFund);
 
+        // 4. save load fund
         loadFundRepository.save(
             new LoadFundEntity(
                 loadFund.loadId(), 
